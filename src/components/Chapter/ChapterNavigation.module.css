@@ -1,0 +1,130 @@
+/* Chapter Navigation */
+.chapterNav {
+  margin: 4rem 0 2rem;
+  padding: 2rem 0;
+  border-top: 2px solid var(--ifm-toc-border-color);
+}
+
+.navButtons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.navButton {
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+  border: 2px solid var(--ifm-toc-border-color);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  color: inherit;
+}
+
+.navButton:hover {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+  border-color: var(--ifm-color-primary);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.2);
+}
+
+.prev {
+  align-items: flex-start;
+  text-align: left;
+}
+
+.next {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.navLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ifm-color-primary);
+  margin-bottom: 0.5rem;
+}
+
+.navTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--ifm-font-color-base);
+  line-height: 1.4;
+}
+
+.navPlaceholder {
+  /* Empty space when no prev/next chapter */
+}
+
+/* Dark mode */
+[data-theme='dark'] .navButton {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme='dark'] .navButton:hover {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.25), rgba(118, 75, 162, 0.25));
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .navButtons {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .next {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .navButton {
+    padding: 1.25rem;
+  }
+
+  .navLabel {
+    font-size: 0.8rem;
+  }
+
+  .navTitle {
+    font-size: 1rem;
+  }
+
+  .chapterNav {
+    margin: 3rem 0 1.5rem;
+  }
+}
+
+/* RTL Support */
+[dir='rtl'] .prev {
+  align-items: flex-end;
+  text-align: right;
+}
+
+[dir='rtl'] .next {
+  align-items: flex-start;
+  text-align: left;
+}
+
+[dir='rtl'] .navButtons {
+  grid-template-columns: 1fr 1fr;
+}
+
+[dir='rtl'] .navLabel {
+  direction: rtl;
+}
+
+@media (max-width: 768px) {
+  [dir='rtl'] .next {
+    align-items: flex-end;
+    text-align: right;
+  }
+}
