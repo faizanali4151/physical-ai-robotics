@@ -323,13 +323,49 @@ export default function Login(): ReactNode {
           {/* Footer - Inside content container */}
           <footer className={styles.loginFooter}>
             <div className={styles.footerLinks}>
-              <a href="/docs/intro" className={styles.footerLink}>About</a>
+              <a
+                href="/about"
+                className={styles.footerLink}
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.location.href = '/login';
+                }}
+              >
+                About
+              </a>
               <span className={styles.footerSeparator}>•</span>
-              <a href="/docs/intro" className={styles.footerLink}>Help</a>
+              <a
+                href="/docs/intro"
+                className={styles.footerLink}
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.location.href = '/login';
+                }}
+              >
+                Help
+              </a>
               <span className={styles.footerSeparator}>•</span>
-              <a href="/docs/intro" className={styles.footerLink}>Privacy</a>
+              <a
+                href="/privacy-policy"
+                className={styles.footerLink}
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.location.href = '/login';
+                }}
+              >
+                Privacy
+              </a>
               <span className={styles.footerSeparator}>•</span>
-              <a href="/docs/intro" className={styles.footerLink}>Terms</a>
+              <a
+                href="/terms-of-service"
+                className={styles.footerLink}
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.location.href = '/login';
+                }}
+              >
+                Terms
+              </a>
             </div>
             <p className={styles.footerTitle}>Physical AI & Humanoid Robotics Book</p>
             <p className={styles.footerCopyright}>© 2025 All rights reserved</p>
