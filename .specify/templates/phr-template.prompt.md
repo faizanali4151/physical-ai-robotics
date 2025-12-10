@@ -1,6 +1,6 @@
 ---
 id: {{ID}}
-title: "{{TITLE}}"
+title: {{TITLE}}
 stage: {{STAGE}}
 date: {{DATE_ISO}}
 surface: {{SURFACE}}
@@ -9,52 +9,37 @@ feature: {{FEATURE}}
 branch: {{BRANCH}}
 user: {{USER}}
 command: {{COMMAND}}
-labels: {{LABELS_YAML}}
+labels: [{{LABELS}}]
 links:
-  spec: {{SPEC_LINK}}
-  ticket: {{TICKET_LINK}}
-  adr: {{ADR_LINK}}
-  pr: {{PR_LINK}}
-files: {{FILES_YAML}}
-tests: {{TESTS_YAML}}
+  spec: {{LINKS_SPEC}}
+  ticket: {{LINKS_TICKET}}
+  adr: {{LINKS_ADR}}
+  pr: {{LINKS_PR}}
+files:
+{{FILES_YAML}}
+tests:
+{{TESTS_YAML}}
 ---
 
-# Prompt History Record: {{TITLE}}
+## Prompt
 
-## Context
-
-**Stage**: {{STAGE}}
-**Feature**: {{FEATURE}}
-**Date**: {{DATE_ISO}}
-**User**: {{USER}}
-**Command**: {{COMMAND}}
-
-## User Prompt
-
-```
 {{PROMPT_TEXT}}
-```
 
-## Assistant Response
+## Response snapshot
 
 {{RESPONSE_TEXT}}
 
-## Files Modified
-
-{{FILES_YAML}}
-
-## Tests Run/Added
-
-{{TESTS_YAML}}
-
 ## Outcome
 
-{{OUTCOME}}
+- ✅ Impact: {{OUTCOME_IMPACT}}
+- 🧪 Tests: {{TESTS_SUMMARY}}
+- 📁 Files: {{FILES_SUMMARY}}
+- 🔁 Next prompts: {{NEXT_PROMPTS}}
+- 🧠 Reflection: {{REFLECTION_NOTE}}
 
-## Evaluation
+## Evaluation notes (flywheel)
 
-{{EVALUATION}}
-
----
-
-*Generated with Claude Code - Spec-Driven Development*
+- Failure modes observed: {{FAILURE_MODES}}
+- Graders run and results (PASS/FAIL): {{GRADER_RESULTS}}
+- Prompt variant (if applicable): {{PROMPT_VARIANT_ID}}
+- Next experiment (smallest change to try): {{NEXT_EXPERIMENT}}

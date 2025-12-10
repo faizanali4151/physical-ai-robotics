@@ -1,323 +1,247 @@
 <!--
-Sync Impact Report:
-- Version: 0.0.0 → 1.0.0
-- Change Type: Initial constitution creation
-- Modified Principles: N/A (new document)
-- Added Sections: All core sections
-- Removed Sections: None
-- Templates Status: ⚠ Pending (to be created)
-- Follow-up TODOs: Create template files (plan, spec, tasks, PHR)
-- Date: 2025-12-04
+SYNC IMPACT REPORT
+==================
+Version Change: Initial → 1.0.0
+Modified Principles: N/A (Initial constitution creation)
+Added Sections:
+  - Core Principles (10 principles total)
+  - Development Workflow
+  - Architecture Standards
+  - Governance
+
+Templates Requiring Updates:
+  ✅ plan-template.md - Constitution Check section already present
+  ✅ spec-template.md - Requirements section aligns with CLI-first principle
+  ✅ tasks-template.md - Task structure supports CLI automation
+
+Follow-up TODOs: None (all placeholders filled)
 -->
 
-# Project Constitution
+# PhysicalAI-RAG-Assistant Constitution
 
-## Metadata
+## Core Principles
 
-- **Project Name**: Physical AI & Humanoid Robotics
-- **Author**: Faizan Khan
-- **Constitution Version**: 1.0.0
-- **Ratification Date**: 2025-12-04
-- **Last Amended Date**: 2025-12-04
-- **Language**: English
-- **Optional Translations**: Urdu
+### I. CLI-First Automation (NON-NEGOTIABLE)
 
-## Project Mission
+All feature development, deployment, and operation MUST be executable via CLI commands. Manual edits, UI configuration, or interactive steps are PROHIBITED unless technically impossible.
 
-This project serves as a comprehensive educational resource for Physical AI,
-embodied intelligence, and humanoid robotics. It aims to bridge the gap between
-theoretical knowledge and practical implementation by covering foundational
-concepts, modern frameworks (ROS 2, Gazebo, NVIDIA Isaac), and cutting-edge
-applications in multi-modal robotics and conversational AI.
+**Rationale**: Ensures reproducibility, enables CI/CD automation, supports infrastructure-as-code, and eliminates configuration drift. Manual processes cannot be versioned, tested, or reliably reproduced across environments.
 
-**Target Audience**: Students, engineers, researchers, and enthusiasts seeking
-to understand and build physical AI systems—from beginner to intermediate level.
+**Requirements**:
+- Every feature MUST provide CLI entry points for all operations
+- Scripts MUST be idempotent (safe to re-run)
+- All configuration MUST be file-based (no environment-specific manual setup)
+- Installation, ingestion, embedding, deployment MUST have CLI commands
 
-**Core Description**: Learn Physical AI, Humanoid Robotics, ROS 2, Gazebo,
-NVIDIA Isaac, and multi-modal robotics applications through 13 comprehensive
-chapters covering theory, simulation, and real-world implementation.
+### II. Deterministic & File-Safe Operations
 
-## Book Structure
+All operations MUST produce predictable, reproducible outputs. File operations MUST be atomic and safe for concurrent access where applicable.
 
-**Total Chapters**: 13
+**Rationale**: Prevents race conditions, ensures consistency across environments, enables reliable testing, and supports team collaboration without conflicts.
 
-**Core Modules**:
-1. Introduction to Physical AI
-2. ROS 2 Fundamentals
-3. Robot Simulation with Gazebo & Unity
-4. NVIDIA Isaac Platform
-5. Humanoid Robot Development
-6. Conversational Robotics & GPT Integration
+**Requirements**:
+- Generated files MUST have deterministic names and content
+- Operations MUST check for existing state before modifying
+- File writes MUST be atomic (write-then-move pattern where needed)
+- No random IDs or timestamps in file content unless required for uniqueness
 
-## Governing Principles
+### III. Spec-Kit Convention Compliance
 
-These principles are non-negotiable standards that guide all content creation,
-code examples, and architectural decisions within this project.
+All outputs MUST follow established spec-kit directory structure, file naming, and content format conventions.
 
----
+**Rationale**: Maintains consistency across features, enables tooling to parse and validate artifacts, and ensures team members can navigate any feature's documentation.
 
-### Principle 1: Educational Clarity
+**Requirements**:
+- Follow `specs/<feature-name>/` structure for all feature artifacts
+- Use standard filenames: `spec.md`, `plan.md`, `tasks.md`, `research.md`, etc.
+- Follow YAML frontmatter conventions for metadata
+- Use established markdown formatting and heading structure
 
-**Statement**: All content MUST prioritize clarity and accessibility over
-technical jargon. Complex concepts MUST be explained with progressive
-disclosure—starting simple, then layering complexity.
+### IV. Free-Tier Infrastructure Only
 
-**Rationale**: The target audience includes beginners. Dense technical writing
-or unexplained acronyms create barriers to learning. Educational materials
-that fail to build understanding incrementally waste the learner's time.
+The RAG chatbot MUST run entirely on free-tier services: Qdrant Cloud Free, Neon Postgres Free, and free LLM APIs (ChatKit or Gemini Free Tier).
 
-**Practical Requirements**:
-- Define all technical terms on first use
-- Use concrete examples before abstract theory
-- Include visual diagrams (mermaid, flowcharts) for system architectures
-- Provide code snippets with inline comments explaining non-obvious logic
-- Structure chapters with clear learning objectives and summaries
+**Rationale**: Ensures accessibility for educational purposes, eliminates cost barriers for students and learners, and aligns with the Physical AI book's mission to democratize robotics knowledge.
 
----
+**Requirements**:
+- Backend MUST use FastAPI (open source)
+- Vector storage MUST use Qdrant Cloud Free tier
+- Database MUST use Neon Postgres Free tier
+- LLM MUST use ChatKit free tier or Gemini Free Tier
+- No paid services or proprietary infrastructure dependencies
 
-### Principle 2: Practical Reproducibility
+### V. Book-Content-Only RAG (Default Mode)
 
-**Statement**: All code examples, simulations, and tutorials MUST be
-reproducible on standard hardware/software configurations. Dependencies MUST
-be explicitly documented with version numbers.
+RAG retrieval MUST default to answering ONLY from book content. General knowledge or external information is PROHIBITED unless explicitly opted out by the user.
 
-**Rationale**: Educational content that cannot be reproduced frustrates
-learners and damages credibility. "Works on my machine" is unacceptable for
-instructional material.
+**Rationale**: Ensures factual accuracy aligned with book material, prevents hallucinations from general LLM knowledge, and maintains educational integrity of the learning resource.
 
-**Practical Requirements**:
-- List all dependencies with version constraints (e.g., `ros2==humble`,
-  `gazebo>=11.0`)
-- Provide setup instructions for Ubuntu 22.04 LTS (primary) and document any
-  platform-specific variations
-- Include troubleshooting sections for common installation/configuration issues
-- Test all code examples in clean environments before publication
-- Use containerization (Docker) where appropriate for complex environments
+**Requirements**:
+- Default system prompt MUST restrict answers to book content
+- RAG pipeline MUST retrieve only from embedded book chapters
+- Clear user messaging when query cannot be answered from book
+- Explicit opt-out mechanism for general knowledge queries
 
----
+### VI. Selected-Text Query Override
 
-### Principle 3: Modern Framework Alignment
+When users select text before querying, the RAG system MUST prioritize that context over normal similarity-based retrieval.
 
-**Statement**: All robotics examples MUST use ROS 2 (Robot Operating System 2)
-as the primary framework. ROS 1 references are permitted only for historical
-context or migration guides, clearly labeled as deprecated.
+**Rationale**: Enables precise, context-aware answers for specific passages, supports clarification questions, and improves user experience for deep-dive learning.
 
-**Rationale**: ROS 2 is the current standard for robotics development, with
-better security, real-time capabilities, and cross-platform support. Teaching
-outdated frameworks wastes learner time and limits career applicability.
+**Requirements**:
+- Frontend MUST capture selected text with queries
+- Backend MUST accept selected-text as optional context parameter
+- When present, selected-text MUST override similarity search
+- LLM prompt MUST prioritize selected-text context over retrieved chunks
 
-**Practical Requirements**:
-- All tutorials use ROS 2 Humble (LTS) or Iron
-- Clearly mark any ROS 1 content with deprecation warnings
-- Demonstrate modern patterns: composition, lifecycle nodes, QoS policies
-- Show integration with DDS (Data Distribution Service)
-- Reference official ROS 2 documentation for deep dives
+### VII. Minimal & CLI-Installable Code
 
----
+Generated code MUST be minimal, focused, and avoid unnecessary abstractions. All dependencies MUST be installable via CLI package managers.
 
-### Principle 4: Simulation-First Development
+**Rationale**: Reduces maintenance burden, improves readability, accelerates development, and ensures reproducible environments.
 
-**Statement**: Practical examples MUST start with simulation before hardware
-deployment. Simulation environments (Gazebo, NVIDIA Isaac Sim, Unity) MUST be
-used to validate algorithms and behaviors.
+**Requirements**:
+- No over-engineering: implement only specified requirements
+- No unnecessary design patterns or abstractions
+- All Python dependencies MUST be in `requirements.txt` or `pyproject.toml`
+- All Node dependencies MUST be in `package.json`
+- Installation MUST succeed via `pip install -r requirements.txt` or `npm install`
 
-**Rationale**: Hardware is expensive, fragile, and time-consuming to debug.
-Simulation enables rapid iteration, safe failure exploration, and accessibility
-for learners without physical robots.
+### VIII. Docusaurus Plugin-Based Integration
 
-**Practical Requirements**:
-- Introduce Gazebo for basic kinematics and sensor simulation
-- Cover NVIDIA Isaac Sim for GPU-accelerated physics and synthetic data
-  generation
-- Demonstrate sim-to-real transfer techniques
-- Explain simulation limitations and reality gap challenges
-- Provide URDF/SDF robot models for standard platforms (e.g., TurtleBot3,
-  simulated humanoids)
+Chatbot integration into the Docusaurus book MUST be plugin-based and installable via CLI commands.
 
----
+**Rationale**: Maintains separation of concerns, enables independent chatbot updates, and follows Docusaurus architecture patterns.
 
-### Principle 5: Safety and Ethics by Design
+**Requirements**:
+- Chatbot UI MUST be a custom Docusaurus plugin
+- Plugin MUST be installable via `npm install` or `yarn add`
+- Plugin configuration MUST be in `docusaurus.config.js`
+- No manual HTML/CSS injection into Docusaurus core files
 
-**Statement**: All humanoid robot examples MUST include safety considerations.
-Ethical implications of autonomous physical systems MUST be addressed
-explicitly in relevant chapters.
+### IX. Re-runnable Pipelines
 
-**Rationale**: Physical robots can cause harm. Ignoring safety in educational
-content normalizes unsafe practices. Ethics education builds responsible
-engineers.
+All data pipelines (ingestion, embedding, indexing) MUST support idempotent re-runs from CLI without breaking existing state.
 
-**Practical Requirements**:
-- Include collision avoidance and emergency stop mechanisms in code examples
-- Discuss force/torque limits for manipulation tasks
-- Address privacy concerns in perception systems (camera/LIDAR data)
-- Cover bias in AI models used for robot decision-making
-- Reference relevant safety standards (ISO 10218 for industrial robots, etc.)
-- Dedicate a chapter to ethics and societal impact
+**Rationale**: Enables content updates, supports incremental development, allows error recovery, and facilitates testing.
 
----
+**Requirements**:
+- Ingestion scripts MUST detect existing data and skip or update intelligently
+- Embedding pipelines MUST support incremental processing
+- Vector database operations MUST be upsert-based (insert or update)
+- Clear CLI flags for full rebuild vs incremental update
 
-### Principle 6: Multimodal Integration
+### X. Simplest CLI-Automatable Solution (Default)
 
-**Statement**: Robotics examples MUST demonstrate integration of multiple
-sensory modalities (vision, LIDAR, IMU, force/torque) and processing
-techniques (traditional CV, deep learning, symbolic reasoning).
+When requirements are ambiguous or multiple approaches exist, ALWAYS choose the simplest solution that is fully CLI-automatable.
 
-**Rationale**: Real-world robotics requires sensor fusion and hybrid
-approaches. Single-modality examples oversimplify and fail to prepare learners
-for production systems.
+**Rationale**: Reduces complexity, accelerates delivery, minimizes maintenance, and adheres to YAGNI (You Aren't Gonna Need It) principle.
 
-**Practical Requirements**:
-- Show sensor fusion examples (e.g., Visual-Inertial Odometry)
-- Integrate vision models (YOLO, Mask R-CNN) with ROS 2 pipelines
-- Demonstrate GPT/LLM integration for natural language interfaces
-- Cover audio processing for voice commands (e.g., Whisper, speech synthesis)
-- Explain when to use learning-based vs. model-based approaches
+**Requirements**:
+- Prefer fewer files over complex directory structures
+- Prefer direct implementations over abstraction layers
+- Prefer bash scripts over complex orchestration tools
+- Prefer flat configuration over nested hierarchies
+- Always document the simpler alternative rejected (if any)
 
----
+## Development Workflow
 
-### Principle 7: Open Source and Community Standards
+### Feature Lifecycle
 
-**Statement**: All code examples MUST be released under permissive open-source
-licenses (MIT or Apache 2.0). Content MUST follow community best practices
-(PEP 8 for Python, ROS 2 style guide).
+1. **Constitution Check**: Verify feature aligns with all 10 core principles
+2. **Specification (`/sp.specify`)**: Define user stories, requirements, acceptance criteria
+3. **Planning (`/sp.plan`)**: Design architecture, contracts, data models
+4. **Task Generation (`/sp.tasks`)**: Break down into CLI-automatable tasks
+5. **Implementation (`/sp.implement`)**: Execute tasks in dependency order
+6. **Validation**: Run CLI commands to verify end-to-end functionality
 
-**Rationale**: Open source enables learning through inspection, modification,
-and contribution. Proprietary examples limit educational value. Consistent
-style improves readability.
+### Testing Strategy
 
-**Practical Requirements**:
-- License all code as MIT or Apache 2.0
-- Follow PEP 8 for Python code (use `black` formatter)
-- Follow ROS 2 C++ or Python style guides
-- Use meaningful variable names and docstrings
-- Contribute reusable components back to the community when appropriate
-- Reference existing open-source projects (MoveIt2, Nav2, etc.)
+- **Contract Tests**: Validate API contracts match specifications
+- **Integration Tests**: Verify CLI commands produce expected outputs
+- **End-to-End Tests**: Test full user journeys from CLI
+- Testing is OPTIONAL unless explicitly requested in feature specification
+- When tests are requested, they MUST be written FIRST and FAIL before implementation
 
----
+### CLI Command Requirements
 
-### Principle 8: Performance and Scalability Awareness
+Every feature MUST provide:
+- **Installation command**: Set up dependencies and configuration
+- **Run command**: Start the service or execute the operation
+- **Test command**: Validate functionality
+- **Clean command**: Remove generated artifacts for fresh start
 
-**Statement**: Code examples MUST demonstrate awareness of real-time
-constraints and computational efficiency. Performance bottlenecks MUST be
-identified and optimized for typical robotics hardware.
+## Architecture Standards
 
-**Rationale**: Robotics operates under strict timing requirements. Inefficient
-code leads to missed deadlines, unsafe behaviors, and poor user experience.
+### Backend (FastAPI)
 
-**Practical Requirements**:
-- Use ROS 2 real-time features where applicable (RT executors, deadline QoS)
-- Profile CPU/GPU usage for perception and planning algorithms
-- Optimize hot paths in control loops (vectorization, JIT compilation)
-- Discuss trade-offs between accuracy and latency
-- Provide guidance on selecting appropriate hardware (CPU, GPU, embedded
-  systems)
+- RESTful API design with clear endpoint naming
+- Request/response validation via Pydantic models
+- Environment variables for all configuration (never hardcode)
+- Structured logging for all operations
+- Error responses with clear, actionable messages
 
----
+### RAG Pipeline
 
-### Principle 9: Version Control and Reproducibility
+- **Ingestion**: Parse Docusaurus markdown, extract chapters, store metadata
+- **Embedding**: Generate embeddings via free LLM API, batch processing
+- **Indexing**: Upsert to Qdrant with chapter metadata (title, number, URL)
+- **Retrieval**: Similarity search with configurable top-k, re-ranking optional
+- **Generation**: Prompt engineering with book context, selected-text override
 
-**Statement**: All project artifacts (code, models, configs) MUST be
-version-controlled. Releases MUST be semantically versioned with clear
-changelogs.
+### Frontend (Docusaurus Plugin)
 
-**Rationale**: Educational projects evolve. Learners need stable references.
-Breaking changes without documentation create confusion and wasted effort.
+- React component for chat widget (floating or embedded)
+- State management via React hooks (no Redux unless justified)
+- API client with error handling and retry logic
+- Markdown rendering for LLM responses
+- Accessibility: keyboard navigation, ARIA labels, screen reader support
 
-**Practical Requirements**:
-- Use Git for all content and code
-- Tag releases using semantic versioning (MAJOR.MINOR.PATCH)
-- Maintain a CHANGELOG.md documenting all significant changes
-- Pin dependency versions in `package.xml`, `requirements.txt`, or
-  `Dockerfile`
-- Archive deprecated examples rather than deleting them
+### Data Models
 
----
+- **Chapter**: id, number, title, content, url, metadata
+- **ChatMessage**: id, role (user/assistant), content, timestamp
+- **QueryContext**: query, selected_text (optional), top_k, filters
 
-### Principle 10: Accessibility and Internationalization
+### Deployment
 
-**Statement**: Content MUST be accessible to learners with diverse backgrounds
-and abilities. Internationalization (i18n) support MUST be considered for
-future translations.
-
-**Rationale**: Robotics education should not be limited by language barriers
-or accessibility issues. Inclusive design expands the learning community.
-
-**Practical Requirements**:
-- Use clear, simple English (avoid idioms)
-- Provide alt-text for images and diagrams
-- Ensure code examples have sufficient contrast in syntax highlighting
-- Structure content with semantic HTML headings (for screen readers)
-- Plan for Urdu translation (as specified)
-- Use i18n-friendly Markdown or Docusaurus localization features
-
----
+- Backend: Deploy to free-tier platforms (Render, Railway, Fly.io)
+- Frontend: Docusaurus static build, deploy to Vercel/Netlify/GitHub Pages
+- Environment: `.env` files for development, environment variables for production
+- Database migrations: Alembic for Postgres schema changes
 
 ## Governance
 
 ### Amendment Procedure
 
-1. **Proposal**: Amendments are proposed via GitHub issue or pull request with
-   rationale.
-2. **Discussion**: Community discussion period (minimum 7 days for minor, 14
-   days for major changes).
-3. **Review**: Maintainer review and version bump determination (see below).
-4. **Approval**: Maintainer approval and merge.
-5. **Documentation**: Update `LAST_AMENDED_DATE`, increment
-   `CONSTITUTION_VERSION`, and prepend Sync Impact Report.
+1. Propose amendment via Pull Request to `.specify/memory/constitution.md`
+2. Increment version following semantic versioning:
+   - **MAJOR**: Backward-incompatible principle removals or redefinitions
+   - **MINOR**: New principles or materially expanded guidance
+   - **PATCH**: Clarifications, wording improvements, non-semantic fixes
+3. Update `LAST_AMENDED_DATE` to current date (YYYY-MM-DD format)
+4. Update dependent templates (plan-template.md, spec-template.md, tasks-template.md)
+5. Create Sync Impact Report as HTML comment at top of file
+6. Merge only after approval from project maintainers
 
 ### Versioning Policy
 
-- **MAJOR** (X.0.0): Removal or fundamental redefinition of principles;
-  backward-incompatible governance changes.
-- **MINOR** (x.Y.0): Addition of new principles; material expansion of
-  existing guidance.
-- **PATCH** (x.y.Z): Clarifications, wording improvements, typo fixes;
-  non-semantic refinements.
+- Constitution version MUST follow semantic versioning (MAJOR.MINOR.PATCH)
+- All feature specs MUST reference constitution version used
+- Breaking changes MUST include migration guide
+- Deprecation warnings MUST precede removals by at least one MINOR version
 
 ### Compliance Review
 
-- **Frequency**: Quarterly review of content against principles.
-- **Process**: Maintainers audit recent chapters/examples for compliance.
-- **Remediation**: Non-compliant content is flagged for update or deprecation.
-- **Reporting**: Compliance status published in project README or dedicated
-  docs.
+- All feature specs (`/sp.specify`) MUST pass Constitution Check
+- All implementation plans (`/sp.plan`) MUST document principle adherence
+- All pull requests MUST verify no constitution violations
+- Complexity (principle violations) MUST be explicitly justified in plan.md
 
-### Enforcement
+### Principle Enforcement
 
-- All pull requests MUST reference relevant principles in their description.
-- CI checks SHOULD enforce style guides (linters, formatters).
-- Non-compliant contributions will be rejected with constructive feedback
-  referencing specific principles.
+- **NON-NEGOTIABLE principles**: Zero tolerance, feature rejected if violated
+- **Standard principles**: Violations require explicit justification and approval
+- **Guidance principles**: Best practices, deviations allowed with documentation
 
----
-
-## Template Alignment
-
-The following templates MUST align with this constitution:
-
-- `.specify/templates/plan-template.md`: Architecture plans must reference
-  Principles 2, 3, 4, 5, 8.
-- `.specify/templates/spec-template.md`: Feature specs must include
-  accessibility (Principle 10) and safety (Principle 5) considerations.
-- `.specify/templates/tasks-template.md`: Task breakdowns must validate
-  reproducibility (Principle 2) and version control (Principle 9).
-- `.specify/templates/phr-template.prompt.md`: Prompt history records track
-  decisions against principles for traceability.
-
----
-
-## Change Log
-
-### 1.0.0 (2025-12-04)
-
-- Initial constitution creation
-- Defined 10 core principles for Physical AI & Humanoid Robotics educational
-  project
-- Established governance procedures and versioning policy
-- Aligned with project goals: ROS 2, Gazebo, NVIDIA Isaac, conversational
-  robotics
-- Committed to accessibility and internationalization (Urdu translation planned)
-
----
-
-**End of Constitution**
+**Version**: 1.0.0 | **Ratified**: 2025-12-07 | **Last Amended**: 2025-12-07

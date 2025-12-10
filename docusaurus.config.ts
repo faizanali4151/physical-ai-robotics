@@ -33,6 +33,21 @@ const config: Config = {
     locales: ['en'],
   },
 
+  // Custom fields accessible in browser via window.docusaurus.siteConfig.customFields
+  customFields: {
+    authUrl: process.env.AUTH_URL || 'http://localhost:3001',
+    chatbotApiUrl: process.env.CHATBOT_API_URL || 'http://localhost:8000',
+  },
+
+  plugins: [
+    [
+      './frontend/docusaurus-plugin-rag-chatbot',
+      {
+        apiEndpoint: process.env.CHATBOT_API_URL || 'http://localhost:8000',
+      },
+    ],
+  ],
+
   presets: [
     [
       'classic',

@@ -1,0 +1,46 @@
+{
+  "collection_name": "physical_ai_book_chunks",
+  "vector_config": {
+    "size": 768,
+    "distance": "Cosine"
+  },
+  "optimizers_config": {
+    "default_segment_number": 2,
+    "indexing_threshold": 10000
+  },
+  "hnsw_config": {
+    "m": 16,
+    "ef_construct": 100
+  },
+  "payload_schema": {
+    "chapter_id": {
+      "type": "integer",
+      "indexed": true
+    },
+    "chapter_number": {
+      "type": "integer",
+      "indexed": true
+    },
+    "chapter_title": {
+      "type": "keyword",
+      "indexed": true
+    },
+    "chunk_text": {
+      "type": "text",
+      "indexed": false
+    },
+    "position": {
+      "type": "integer",
+      "indexed": true
+    },
+    "token_count": {
+      "type": "integer",
+      "indexed": false
+    },
+    "created_at": {
+      "type": "keyword",
+      "indexed": false
+    }
+  },
+  "on_disk_payload": false
+}

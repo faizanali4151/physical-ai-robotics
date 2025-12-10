@@ -4,6 +4,8 @@ import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import Heading from '@theme/Heading';
+import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
+import { authClient } from '../lib/auth-client';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 
@@ -366,25 +368,26 @@ export default function Home(): ReactNode {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check authentication status
-    if (typeof window !== 'undefined') {
-      const userStr = localStorage.getItem('user');
-      if (userStr) {
+    // Check authentication using Better Auth
+    const checkAuth = async () => {
+      if (ExecutionEnvironment.canUseDOM) {
         try {
-          const user = JSON.parse(userStr);
-          if (user.loggedIn) {
+          const session = await authClient.getSession();
+          if (session.data?.user) {
+            console.log('✅ User authenticated:', session.data.user.email);
             setIsAuthenticated(true);
+            setIsLoading(false);
           } else {
+            console.log('❌ No session, redirecting to login');
             window.location.href = '/login';
           }
-        } catch (e) {
+        } catch (err) {
+          console.error('❌ Auth check error:', err);
           window.location.href = '/login';
         }
-      } else {
-        window.location.href = '/login';
       }
-      setIsLoading(false);
-    }
+    };
+    checkAuth();
   }, []);
 
   useEffect(() => {

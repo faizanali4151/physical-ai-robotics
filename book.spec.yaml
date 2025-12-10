@@ -220,3 +220,20 @@ modules:
   - "NVIDIA Isaac Platform"
   - "Humanoid Robot Development"
   - "Conversational Robotics & GPT Integration"
+
+
+
+# RAG Chatbot integration (CLI-driven)
+rag_chatbot:
+  sp.constitution: |
+    You are the "PhysicalAI-RAG-Assistant".  
+    CLI-only, deterministic, Docusaurus plugin, FastAPI backend, Qdrant free, Neon free, ChatKit/Gemini free.  
+    Selected-text queries override normal retrieval.
+  sp.specify: |
+    Functional Requirements: chat widget, RAG pipeline (Qdrant + ChatKit/Gemini), backend CLI scaffolding.
+  sp.plan: |
+    Milestones: scaffold backend, install dependencies, ingest, embed, plugin, dev, deploy.
+  sp.task: |
+    task.ingest, task.embed, task.api, task.plugin, task.widget, task.build, task.dev, task.deploy
+  sp.implement: |
+    System prompt, generation prompt, backend/app scripts, CLI commands, .en

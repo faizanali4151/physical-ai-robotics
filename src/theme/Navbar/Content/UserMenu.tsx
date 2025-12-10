@@ -3,40 +3,46 @@
  *
  * Displays user authentication state in the navbar
  * Shows user name and logout button when logged in
+ * Uses Better Auth for authentication
  */
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from '@docusaurus/Link';
 import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
+import { authClient } from '../../../lib/auth-client';
 import styles from './UserMenu.module.css';
 
 interface User {
-  name: string;
+  id: string;
+  name?: string;
   email: string;
-  loggedIn: boolean;
-  avatar?: string;
+  image?: string;
+  emailVerified: boolean;
 }
 
 export default function UserMenu(): JSX.Element | null {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Load user from localStorage
+  // Load user from Better Auth session
   useEffect(() => {
-    if (ExecutionEnvironment.canUseDOM) {
-      const userStr = localStorage.getItem('user');
-      if (userStr) {
+    const loadUser = async () => {
+      if (ExecutionEnvironment.canUseDOM) {
         try {
-          const user = JSON.parse(userStr);
-          if (user.loggedIn) {
-            setCurrentUser(user);
+          const session = await authClient.getSession();
+          if (session.data?.user) {
+            setCurrentUser(session.data.user as User);
           }
-        } catch (e) {
-          console.error('Failed to parse user data', e);
+        } catch (err) {
+          console.error('Failed to load user session', err);
+        } finally {
+          setLoading(false);
         }
       }
-    }
+    };
+    loadUser();
   }, []);
 
   // Close dropdown when clicking outside
@@ -51,13 +57,32 @@ export default function UserMenu(): JSX.Element | null {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (ExecutionEnvironment.canUseDOM) {
-      localStorage.removeItem('user');
-      setIsOpen(false);
-      window.location.href = '/login';
+      try {
+        console.log('🔄 Signing out...');
+
+        // Sign out using Better Auth
+        await authClient.signOut();
+
+        console.log('✅ Sign out successful');
+        setCurrentUser(null);
+        setIsOpen(false);
+
+        // Redirect to login page
+        window.location.href = '/login';
+      } catch (err) {
+        console.error('❌ Sign out error:', err);
+        // Force redirect to login even if signOut fails
+        window.location.href = '/login';
+      }
     }
   };
+
+  // Loading state
+  if (loading) {
+    return null;
+  }
 
   // Not logged in - show login button
   if (!currentUser) {
@@ -71,7 +96,7 @@ export default function UserMenu(): JSX.Element | null {
   // Logged in - show user menu
   const displayName = currentUser.name || currentUser.email?.split('@')[0] || 'User';
   const initial = displayName.charAt(0).toUpperCase();
-  const hasAvatar = currentUser.avatar && currentUser.avatar.trim() !== '';
+  const hasAvatar = currentUser.image && currentUser.image.trim() !== '';
 
   return (
     <div className={styles.userMenuContainer} ref={dropdownRef}>
@@ -84,7 +109,7 @@ export default function UserMenu(): JSX.Element | null {
         <div className={styles.userAvatar}>
           {hasAvatar ? (
             <img
-              src={currentUser.avatar}
+              src={currentUser.image}
               alt={displayName}
               className={styles.avatarImage}
             />

@@ -1,0 +1,35 @@
+{
+  "version": 2,
+  "name": "physical-ai-book",
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "build"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
+    },
+    {
+      "src": "/img/(.*)",
+      "dest": "/img/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ],
+  "env": {
+    "REACT_APP_API_ENDPOINT": "@rag_chatbot_api_endpoint"
+  },
+  "build": {
+    "env": {
+      "NODE_VERSION": "20"
+    }
+  }
+}
