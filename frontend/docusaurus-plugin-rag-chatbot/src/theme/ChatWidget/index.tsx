@@ -17,11 +17,11 @@ import { ChatClient, ChatClientError, QueryContext } from '../../api/chatClient'
 import { ErrorBoundary } from './ErrorBoundary';
 import './styles.css';
 
-// Import Better Auth client
+// Import Better Auth client from plugin-local shim
 let authClient: any = null;
 if (typeof window !== 'undefined') {
   // Dynamically import auth-client to avoid SSR issues
-  import('../../../../../src/lib/auth-client').then(module => {
+  import('../../lib/auth-client').then(module => {
     authClient = module.authClient;
   }).catch(err => {
     console.error('[ChatWidget] Failed to load auth client:', err);
