@@ -1,0 +1,502 @@
+openapi: 3.0.3
+info:
+  title: RAG Chatbot API
+  description: |
+    REST API for the Physical AI Book RAG chatbot. Provides endpoints for querying book content,
+    managing conversation history, and health checks. All operations support free-tier infrastructure
+    (Qdrant, Neon, Gemini API).
+  version: 1.0.0
+  contact:
+    name: Physical AI Book Team
+    url: https://github.com/yourusername/physical-ai-book
+
+servers:
+  - url: http://localhost:8000
+    description: Local development
+  - url: https://api.physicalai.example.com
+    description: Production (free-tier deployment)
+
+tags:
+  - name: Query
+    description: RAG query and answer generation
+  - name: History
+    description: Conversation history management
+  - name: Health
+    description: Service health and dependency status
+
+paths:
+  /query:
+    post:
+      summary: Submit a query and get an answer
+      description: |
+        Accepts a user query (with optional selected text context) and returns an LLM-generated
+        answer based on retrieved book content. Supports book-content-only mode (default) with
+        selected-text query override.
+      operationId: submitQuery
+      tags:
+        - Query
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryRequest'
+            examples:
+              basicQuery:
+                summary: Basic query without context
+                value:
+                  query: "What is embodied intelligence?"
+                  top_k: 5
+              selectedTextQuery:
+                summary: Query with selected text context
+                value:
+                  query: "Explain this concept in simpler terms"
+                  selected_text: "Zero Moment Point (ZMP) is the point on the ground where the sum of all forces acting on the robot equals zero."
+                  top_k: 3
+              sessionQuery:
+                summary: Query with session for history tracking
+                value:
+                  query: "How does this relate to inverse kinematics?"
+                  session_id: "550e8400-e29b-41d4-a716-446655440000"
+                  chapter_filters: [4, 7]
+                  top_k: 5
+      responses:
+        '200':
+          description: Successful query response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryResponse'
+              examples:
+                success:
+                  summary: Successful answer with sources
+                  value:
+                    answer: "Embodied intelligence refers to AI systems that interact with the physical world through sensors and actuators, learning from direct experience rather than abstract data. In robotics, this means the robot's body and environment shape its intelligence."
+                    sources:
+                      - chapter_title: "Introduction to Physical AI"
+                        chapter_number: 1
+                        chunk_text: "Physical AI, or embodied intelligence, represents a paradigm shift..."
+                        position: 0
+                        relevance_score: 0.92
+                      - chapter_title: "Foundations of Robotics"
+                        chapter_number: 2
+                        chunk_text: "Unlike traditional AI, embodied agents must..."
+                        position: 2
+                        relevance_score: 0.87
+                    confidence: 0.89
+                    session_id: "550e8400-e29b-41d4-a716-446655440000"
+        '400':
+          description: Invalid request (empty query, invalid top_k, etc.)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Validation error"
+                detail: "Query text cannot be empty"
+                status_code: 400
+        '429':
+          description: Rate limit exceeded (LLM API or Qdrant)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Rate limit exceeded"
+                detail: "Gemini API rate limit reached. Try again in 60 seconds."
+                status_code: 429
+        '503':
+          description: Service unavailable (Qdrant, Neon, or LLM API down)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Service unavailable"
+                detail: "Qdrant vector store connection failed"
+                status_code: 503
+
+  /history/{session_id}:
+    get:
+      summary: Retrieve conversation history for a session
+      description: |
+        Returns all messages (user queries and assistant responses) for a given session,
+        ordered by timestamp (oldest first). Used by frontend to restore chat history
+        when user returns to the book.
+      operationId: getHistory
+      tags:
+        - History
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          description: UUID of the conversation session
+          schema:
+            type: string
+            format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        '200':
+          description: Conversation history retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoryResponse'
+              example:
+                session_id: "550e8400-e29b-41d4-a716-446655440000"
+                messages:
+                  - id: "660e8400-e29b-41d4-a716-446655440001"
+                    role: "user"
+                    content: "What is Physical AI?"
+                    selected_text: null
+                    timestamp: "2025-12-07T10:30:00Z"
+                  - id: "660e8400-e29b-41d4-a716-446655440002"
+                    role: "assistant"
+                    content: "Physical AI refers to artificial intelligence systems..."
+                    sources:
+                      - chapter_title: "Introduction to Physical AI"
+                        chapter_number: 1
+                        position: 0
+                    timestamp: "2025-12-07T10:30:02Z"
+                message_count: 2
+        '404':
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Not found"
+                detail: "Session 550e8400-e29b-41d4-a716-446655440000 does not exist"
+                status_code: 404
+
+    delete:
+      summary: Clear conversation history for a session
+      description: |
+        Deletes all messages for a given session. Used when user clicks "Clear History"
+        button in chat widget. Cascade deletes messages but preserves session metadata.
+      operationId: clearHistory
+      tags:
+        - History
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          description: UUID of the conversation session
+          schema:
+            type: string
+            format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        '204':
+          description: History cleared successfully (no content)
+        '404':
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Not found"
+                detail: "Session 550e8400-e29b-41d4-a716-446655440000 does not exist"
+                status_code: 404
+
+  /health:
+    get:
+      summary: Service health check
+      description: |
+        Returns health status of the backend service and its dependencies (Qdrant, Neon, LLM API).
+        Used for monitoring and deployment readiness checks.
+      operationId: getHealth
+      tags:
+        - Health
+      responses:
+        '200':
+          description: All services healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              example:
+                status: "healthy"
+                dependencies:
+                  qdrant:
+                    status: "healthy"
+                    latency_ms: 45
+                  neon:
+                    status: "healthy"
+                    latency_ms: 32
+                  llm_api:
+                    status: "healthy"
+                    provider: "gemini"
+                    latency_ms: 120
+                timestamp: "2025-12-07T10:30:00Z"
+        '503':
+          description: One or more services unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              example:
+                status: "unhealthy"
+                dependencies:
+                  qdrant:
+                    status: "healthy"
+                    latency_ms: 50
+                  neon:
+                    status: "unhealthy"
+                    error: "Connection timeout"
+                  llm_api:
+                    status: "healthy"
+                    provider: "gemini"
+                    latency_ms: 110
+                timestamp: "2025-12-07T10:30:00Z"
+
+components:
+  schemas:
+    QueryRequest:
+      type: object
+      required:
+        - query
+      properties:
+        query:
+          type: string
+          minLength: 1
+          maxLength: 2000
+          description: User's question text
+          example: "How do humanoid robots maintain balance?"
+        selected_text:
+          type: string
+          maxLength: 5000
+          nullable: true
+          description: User-highlighted book passage (optional context override)
+          example: "The Zero Moment Point (ZMP) criterion ensures dynamic stability..."
+        top_k:
+          type: integer
+          minimum: 1
+          maximum: 20
+          default: 5
+          description: Number of similar chunks to retrieve from Qdrant
+          example: 5
+        chapter_filters:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+            maximum: 15
+          nullable: true
+          description: Restrict search to specific chapter numbers
+          example: [4, 7]
+        session_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: Conversation session ID for history tracking
+          example: "550e8400-e29b-41d4-a716-446655440000"
+
+    QueryResponse:
+      type: object
+      required:
+        - answer
+        - sources
+        - confidence
+        - session_id
+      properties:
+        answer:
+          type: string
+          description: LLM-generated answer based on retrieved book content
+          example: "Humanoid robots maintain balance using the Zero Moment Point (ZMP) criterion..."
+        sources:
+          type: array
+          items:
+            $ref: '#/components/schemas/Source'
+          description: List of book chunks used to generate the answer
+        confidence:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          description: Confidence score (avg relevance of top sources)
+          example: 0.89
+        session_id:
+          type: string
+          format: uuid
+          description: Session ID for this conversation (newly created or existing)
+          example: "550e8400-e29b-41d4-a716-446655440000"
+
+    Source:
+      type: object
+      required:
+        - chapter_title
+        - chapter_number
+        - chunk_text
+        - position
+        - relevance_score
+      properties:
+        chapter_title:
+          type: string
+          description: Title of the source chapter
+          example: "Locomotion & Bipedal Walking"
+        chapter_number:
+          type: integer
+          minimum: 1
+          description: Chapter number in the book
+          example: 7
+        chunk_text:
+          type: string
+          description: Text content of the retrieved chunk
+          example: "Zero Moment Point (ZMP) is the point on the ground where..."
+        position:
+          type: integer
+          minimum: 0
+          description: Ordinal position of chunk within chapter
+          example: 3
+        relevance_score:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          description: Cosine similarity score (Qdrant search result)
+          example: 0.92
+
+    HistoryResponse:
+      type: object
+      required:
+        - session_id
+        - messages
+        - message_count
+      properties:
+        session_id:
+          type: string
+          format: uuid
+          description: UUID of the conversation session
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatMessageResponse'
+          description: List of messages ordered by timestamp
+        message_count:
+          type: integer
+          minimum: 0
+          description: Total number of messages in this session
+          example: 10
+
+    ChatMessageResponse:
+      type: object
+      required:
+        - id
+        - role
+        - content
+        - timestamp
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique message ID
+          example: "660e8400-e29b-41d4-a716-446655440001"
+        role:
+          type: string
+          enum: [user, assistant]
+          description: Message sender role
+          example: "user"
+        content:
+          type: string
+          description: Message text
+          example: "What is embodied intelligence?"
+        selected_text:
+          type: string
+          nullable: true
+          description: User-selected text (only for user messages)
+          example: null
+        sources:
+          type: array
+          items:
+            $ref: '#/components/schemas/Source'
+          nullable: true
+          description: Source chunks (only for assistant messages)
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp
+          example: "2025-12-07T10:30:00Z"
+
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - dependencies
+        - timestamp
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+          description: Overall service status
+          example: "healthy"
+        dependencies:
+          type: object
+          description: Health status of each dependency
+          properties:
+            qdrant:
+              $ref: '#/components/schemas/DependencyStatus'
+            neon:
+              $ref: '#/components/schemas/DependencyStatus'
+            llm_api:
+              $ref: '#/components/schemas/LLMStatus'
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of health check
+          example: "2025-12-07T10:30:00Z"
+
+    DependencyStatus:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+          description: Dependency health status
+          example: "healthy"
+        latency_ms:
+          type: integer
+          minimum: 0
+          nullable: true
+          description: Response latency in milliseconds (if healthy)
+          example: 45
+        error:
+          type: string
+          nullable: true
+          description: Error message (if unhealthy)
+          example: "Connection timeout"
+
+    LLMStatus:
+      allOf:
+        - $ref: '#/components/schemas/DependencyStatus'
+        - type: object
+          properties:
+            provider:
+              type: string
+              enum: [gemini, chatkit]
+              description: Active LLM provider
+              example: "gemini"
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - status_code
+      properties:
+        error:
+          type: string
+          description: Error type
+          example: "Validation error"
+        detail:
+          type: string
+          description: Detailed error message
+          example: "Query text cannot be empty"
+        status_code:
+          type: integer
+          description: HTTP status code
+          example: 400

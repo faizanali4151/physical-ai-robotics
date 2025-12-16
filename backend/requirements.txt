@@ -1,0 +1,29 @@
+# RAG Chatbot Backend Dependencies
+# Python 3.11+ required (compatible with 3.13)
+
+# Web Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# Vector Store
+qdrant-client==1.11.3
+
+# LLM Provider
+google-generativeai==0.3.2
+
+# Database
+psycopg[binary]>=3.2.2
+
+# Configuration
+python-dotenv==1.0.0
+
+# Data Validation
+pydantic==2.5.2
+pydantic-settings==2.1.0
+
+# Text Processing
+nltk==3.8.1
+tiktoken==0.5.2
+
+# Utilities
+requests==2.31.0
