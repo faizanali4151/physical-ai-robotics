@@ -1,6 +1,6 @@
-# Production Deployment Guide: RAG Chatbot
+# CORS & OAuth Deployment Fix
 
-Complete guide for deploying the RAG Chatbot to production with multiple platform options.
+**URGENT**: This guide fixes the CORS errors preventing Google OAuth and API access from working.
 
 ## Table of Contents
 

@@ -37,6 +37,8 @@ export const auth = betterAuth({
   trustedOrigins: [
     "http://localhost:3000",
     "http://localhost:3001",
+    "https://physical-ai-book1-inky.vercel.app",
+    "https://physical-ai-book1-muhammad-faizans-projects-c907627a.vercel.app",
   ],
 
   // Email and password authentication
