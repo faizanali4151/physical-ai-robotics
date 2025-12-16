@@ -1,0 +1,36 @@
+services:
+  # Backend API Service
+  - type: web
+    name: physical-ai-backend
+    env: python
+    region: oregon
+    plan: free
+    branch: main
+    buildCommand: "cd backend && pip install -r requirements.txt"
+    startCommand: "cd backend && uvicorn src.main:app --host 0.0.0.0 --port $PORT"
+    healthCheckPath: /health
+    envVars:
+      - key: LLM_PROVIDER
+        value: gemini
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: QDRANT_URL
+        sync: false
+      - key: QDRANT_API_KEY
+        sync: false
+      - key: NEON_CONNECTION_STRING
+        sync: false
+      - key: CORS_ORIGINS
+        value: https://physical-ai-book1.vercel.app,http://localhost:3000
+      - key: LOG_LEVEL
+        value: INFO
+      - key: CHUNK_SIZE
+        value: 512
+      - key: CHUNK_OVERLAP
+        value: 128
+      - key: TOP_K_RESULTS
+        value: 5
+      - key: SIMILARITY_THRESHOLD
+        value: 0.7
+      - key: BACKEND_PORT
+        value: 8000

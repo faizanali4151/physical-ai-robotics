@@ -1,0 +1,35 @@
+services:
+  # Authentication Server (BetterAuth)
+  - type: web
+    name: physical-ai-auth
+    env: node
+    region: oregon
+    plan: free
+    branch: main
+    rootDir: auth-server
+    buildCommand: "npm install && npm run build"
+    startCommand: "npm start"
+    healthCheckPath: /
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: BETTER_AUTH_SECRET
+        sync: false
+      - key: PORT
+        value: 10000
+      - key: NODE_ENV
+        value: production
+      - key: APP_URL
+        value: https://physical-ai-book1-swc3xvfda-muhammad-faizans-projects-c907627a.vercel.app
+      - key: AUTH_URL
+        sync: false  # Set this to your deployed auth server URL after first deployment
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
+      - key: ALLOWED_ORIGINS
+        value: https://physical-ai-book1-swc3xvfda-muhammad-faizans-projects-c907627a.vercel.app
