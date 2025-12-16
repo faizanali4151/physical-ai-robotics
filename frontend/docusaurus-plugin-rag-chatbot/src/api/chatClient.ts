@@ -66,7 +66,7 @@ export class ChatClient {
   private retryDelay: number;
 
   constructor(
-    apiEndpoint: string = 'http://localhost:8000',
+    apiEndpoint: string = 'https://physical-ai-backend.onrender.com',
     maxRetries: number = 3,
     retryDelay: number = 1000,
   ) {
@@ -79,13 +79,36 @@ export class ChatClient {
    * Get API endpoint from meta tag or use default.
    */
   static getApiEndpoint(): string {
-    if (typeof document !== 'undefined') {
-      const meta = document.querySelector('meta[name="rag-chatbot-api"]');
-      if (meta) {
-        return meta.getAttribute('content') || 'http://localhost:8000';
+    // Production backend URL
+    const productionBackend = 'https://physical-ai-backend.onrender.com';
+    const developmentBackend = 'http://localhost:8000';
+
+    // Check if we're in production
+    if (typeof window !== 'undefined') {
+      const isProduction = window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1');
+      const defaultEndpoint = isProduction ? productionBackend : developmentBackend;
+
+      // Try to get from meta tag first
+      if (typeof document !== 'undefined') {
+        const meta = document.querySelector('meta[name="rag-chatbot-api"]');
+        if (meta) {
+          const metaContent = meta.getAttribute('content');
+          if (metaContent && metaContent !== 'http://localhost:8000') {
+            return metaContent;
+          }
+        }
       }
+
+      // Try environment variable
+      if (process.env.REACT_APP_API_ENDPOINT && process.env.REACT_APP_API_ENDPOINT !== 'http://localhost:8000') {
+        return process.env.REACT_APP_API_ENDPOINT;
+      }
+
+      // Return production or development default
+      return defaultEndpoint;
     }
-    return process.env.REACT_APP_API_ENDPOINT || 'http://localhost:8000';
+
+    return process.env.REACT_APP_API_ENDPOINT || productionBackend;
   }
 
   /**

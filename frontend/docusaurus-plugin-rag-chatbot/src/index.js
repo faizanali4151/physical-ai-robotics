@@ -17,13 +17,25 @@ module.exports = function (context, options) {
     },
 
     injectHtmlTags() {
+      // Determine the API endpoint based on environment
+      let apiEndpoint = options.apiEndpoint;
+
+      // If no endpoint provided or it's localhost, use production URL
+      if (!apiEndpoint || apiEndpoint === 'http://localhost:8000') {
+        // Check if we're in production build
+        const isProduction = process.env.NODE_ENV === 'production';
+        apiEndpoint = isProduction
+          ? 'https://physical-ai-backend.onrender.com'
+          : 'http://localhost:8000';
+      }
+
       return {
         headTags: [
           {
             tagName: 'meta',
             attributes: {
               name: 'rag-chatbot-api',
-              content: options.apiEndpoint || 'http://localhost:8000',
+              content: apiEndpoint,
             },
           },
         ],

@@ -35,15 +35,21 @@ const config: Config = {
 
   // Custom fields accessible in browser via window.docusaurus.siteConfig.customFields
   customFields: {
-    authUrl: process.env.AUTH_URL || 'http://localhost:3001',
-    chatbotApiUrl: process.env.CHATBOT_API_URL || 'http://localhost:8000',
+    authUrl: process.env.AUTH_URL || process.env.NODE_ENV === 'production'
+      ? 'https://physical-ai-backend.onrender.com'
+      : 'http://localhost:3001',
+    chatbotApiUrl: process.env.CHATBOT_API_URL || process.env.NODE_ENV === 'production'
+      ? 'https://physical-ai-backend.onrender.com'
+      : 'http://localhost:8000',
   },
 
   plugins: [
     [
       './frontend/docusaurus-plugin-rag-chatbot',
       {
-        apiEndpoint: process.env.CHATBOT_API_URL || 'http://localhost:8000',
+        apiEndpoint: process.env.CHATBOT_API_URL || process.env.NODE_ENV === 'production'
+          ? 'https://physical-ai-backend.onrender.com'
+          : 'http://localhost:8000',
       },
     ],
   ],
