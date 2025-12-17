@@ -51,7 +51,6 @@ export const {
   signUp,
   signOut,
   useSession,
-  useUser,
 } = authClient;
 
 // Helper function to check if user is authenticated with timeout
