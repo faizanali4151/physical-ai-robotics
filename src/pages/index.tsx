@@ -365,25 +365,38 @@ function CTA() {
 export default function Home(): ReactNode {
   const { siteConfig } = useDocusaurusContext();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [authCheckComplete, setAuthCheckComplete] = useState(false);
 
   useEffect(() => {
-    // Check authentication using Better Auth
+    // Check authentication using Better Auth (non-blocking with timeout)
     const checkAuth = async () => {
       if (ExecutionEnvironment.canUseDOM) {
         try {
-          const session = await authClient.getSession();
-          if (session.data?.user) {
+          console.log('🔍 Checking authentication status...');
+
+          // Use timeout wrapper to prevent infinite hanging
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Auth server timeout')), 3000)
+          );
+
+          const sessionPromise = authClient.getSession();
+
+          const session = await Promise.race([sessionPromise, timeoutPromise]) as any;
+
+          if (session?.data?.user) {
             console.log('✅ User authenticated:', session.data.user.email);
             setIsAuthenticated(true);
-            setIsLoading(false);
           } else {
-            console.log('❌ No session, redirecting to login');
-            window.location.href = '/login';
+            console.log('ℹ️ No active session - showing guest mode');
+            setIsAuthenticated(false);
           }
         } catch (err) {
-          console.error('❌ Auth check error:', err);
-          window.location.href = '/login';
+          // Log error but don't block - allow guest access
+          console.warn('⚠️ Auth check failed (server may be sleeping):', err instanceof Error ? err.message : 'Unknown error');
+          console.log('ℹ️ Continuing in guest mode - authentication features may be limited');
+          setIsAuthenticated(false);
+        } finally {
+          setAuthCheckComplete(true);
         }
       }
     };
@@ -391,8 +404,8 @@ export default function Home(): ReactNode {
   }, []);
 
   useEffect(() => {
-    // Initialize AOS only after authentication check
-    if (isAuthenticated) {
+    // Initialize AOS after auth check completes (regardless of result)
+    if (authCheckComplete) {
       AOS.init({
         duration: 800,
         easing: 'ease-in-out',
@@ -400,39 +413,11 @@ export default function Home(): ReactNode {
         mirror: false,
       });
     }
-  }, [isAuthenticated]);
+  }, [authCheckComplete]);
 
-  // Show loading spinner while checking authentication
-  if (isLoading) {
-    return (
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-      }}>
-        <div style={{
-          width: '50px',
-          height: '50px',
-          border: '4px solid rgba(255, 255, 255, 0.3)',
-          borderTop: '4px solid white',
-          borderRadius: '50%',
-          animation: 'spin 1s linear infinite'
-        }} />
-        <style>{`
-          @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-          }
-        `}</style>
-      </div>
-    );
-  }
-
-  // Don't render content if not authenticated (redirect will happen)
-  if (!isAuthenticated) {
-    return null;
+  // Show minimal loading only during initial auth check (max 3 seconds)
+  if (!authCheckComplete) {
+    return null; // Return null briefly to prevent flash
   }
 
   return (

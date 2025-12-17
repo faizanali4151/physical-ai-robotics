@@ -26,17 +26,25 @@ export default function UserMenu(): JSX.Element | null {
   const [loading, setLoading] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Load user from Better Auth session
+  // Load user from Better Auth session with timeout
   useEffect(() => {
     const loadUser = async () => {
       if (ExecutionEnvironment.canUseDOM) {
         try {
-          const session = await authClient.getSession();
-          if (session.data?.user) {
+          // Add 3-second timeout to prevent hanging
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Auth server timeout')), 3000)
+          );
+
+          const sessionPromise = authClient.getSession();
+          const session = await Promise.race([sessionPromise, timeoutPromise]) as any;
+
+          if (session?.data?.user) {
             setCurrentUser(session.data.user as User);
           }
         } catch (err) {
-          console.error('Failed to load user session', err);
+          console.warn('⚠️ Failed to load user session:', err instanceof Error ? err.message : 'Unknown error');
+          console.log('ℹ️ Auth server may be sleeping - showing guest mode');
         } finally {
           setLoading(false);
         }
