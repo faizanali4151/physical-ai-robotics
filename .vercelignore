@@ -1,0 +1,14 @@
+# Ignore backend and auth-server directories
+# Only deploy the Docusaurus frontend
+backend/
+auth-server/
+.specify/
+specs/
+tests/
+ssss/
+
+# Ignore development files
+.env
+.env.local
+.env.*.local
+*.log

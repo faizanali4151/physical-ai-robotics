@@ -1,10 +1,5 @@
 {
   "version": 2,
-  "name": "physical-ai-book",
-  "buildCommand": "npm run build",
-  "outputDirectory": "build",
-  "installCommand": "npm install",
-  "framework": "docusaurus",
   "rewrites": [
     {
       "source": "/docs/:path*",
