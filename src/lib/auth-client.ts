@@ -38,6 +38,11 @@ const withTimeout = <T>(promise: Promise<T>, timeoutMs: number, errorMessage: st
 // BetterAuth client configuration
 export const authClient = createAuthClient({
   baseURL: getAuthURL(),
+  // CRITICAL: Enable credentials to send cookies with cross-origin requests
+  // This is required for session cookies from Render to work on Vercel domain
+  fetchOptions: {
+    credentials: 'include' as RequestCredentials,
+  },
 });
 
 // Export useful methods for React components

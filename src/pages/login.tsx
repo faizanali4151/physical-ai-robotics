@@ -13,6 +13,75 @@ export default function Login(): ReactNode {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
+  // Handle OAuth callback
+  useEffect(() => {
+    const checkOAuthCallback = async () => {
+      if (ExecutionEnvironment.canUseDOM) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+        const errorDescription = urlParams.get('error_description');
+
+        if (error) {
+          console.error('❌ OAuth error:', error, errorDescription);
+          setError(`OAuth failed: ${errorDescription || error}`);
+          // Clean URL
+          window.history.replaceState({}, document.title, window.location.pathname);
+          return;
+        }
+
+        // Check if we just returned from OAuth (has state or code param)
+        const hasOAuthParams = urlParams.has('state') || urlParams.has('code');
+
+        if (hasOAuthParams) {
+          console.log('🔍 OAuth callback detected, checking session...');
+          setLoading(true);
+
+          try {
+            // Add small delay to allow cookie to be set
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // Add timeout to session check (5 seconds max)
+            const timeoutPromise = new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('Session check timeout')), 5000)
+            );
+
+            const sessionPromise = authClient.getSession();
+            const session = await Promise.race([sessionPromise, timeoutPromise]) as any;
+
+            if (session?.data?.user) {
+              console.log('✅ OAuth login successful:', session.data.user.email);
+              setSuccess('✅ Login successful! Redirecting...');
+
+              // Clean URL and redirect
+              window.history.replaceState({}, document.title, window.location.pathname);
+
+              setTimeout(() => {
+                window.location.href = '/';
+              }, 1000);
+            } else {
+              console.warn('⚠️ OAuth callback but no session found');
+              setError('Authentication completed but session not established. Please try again.');
+              window.history.replaceState({}, document.title, window.location.pathname);
+            }
+          } catch (err) {
+            console.error('❌ OAuth callback error:', err);
+            const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+            if (errorMsg.includes('timeout')) {
+              setError('Auth server is slow to respond. Please refresh the page or try again.');
+            } else {
+              setError('Failed to verify authentication. Please try again.');
+            }
+            window.history.replaceState({}, document.title, window.location.pathname);
+          } finally {
+            setLoading(false);
+          }
+        }
+      }
+    };
+
+    checkOAuthCallback();
+  }, []);
+
   // DO NOT auto-redirect if already authenticated
   // Let user see login page, they can navigate away manually
   // This prevents redirect loops and unexpected behavior
@@ -122,15 +191,20 @@ export default function Login(): ReactNode {
       console.log(`🔗 Initiating ${provider} OAuth...`);
 
       // Use Better Auth client to initiate OAuth flow
-      // IMPORTANT: Use absolute URL for callbackURL to prevent redirect to wrong domain
+      // IMPORTANT: Redirect back to /login so the callback handler can process the result
       const callbackURL = typeof window !== 'undefined'
-        ? `${window.location.origin}/`
-        : 'http://localhost:3000/';
+        ? `${window.location.origin}/login`
+        : 'http://localhost:3000/login';
+
+      console.log(`📍 OAuth callback URL: ${callbackURL}`);
 
       await authClient.signIn.social({
         provider: provider,
         callbackURL: callbackURL,
       });
+
+      // Note: The page will redirect to provider's OAuth page
+      // After consent, user will return to /login with OAuth params
     } catch (err: any) {
       console.error(`❌ ${provider} OAuth error:`, err);
       setError(err.message || `${provider} sign-in failed`);

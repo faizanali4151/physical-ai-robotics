@@ -76,6 +76,9 @@ export const auth = betterAuth({
       enabled: false,
     },
     useSecureCookies: process.env.NODE_ENV === "production",
+    // CRITICAL: Must use SameSite=None for cross-domain authentication (Vercel -> Render)
+    // This allows cookies to be sent with cross-origin requests during OAuth flow
+    sameSiteCookieAttribute: process.env.NODE_ENV === "production" ? "none" : "lax",
   },
 
   // Logging for debugging
