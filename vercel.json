@@ -1,13 +1,22 @@
 {
   "version": 2,
-  "rewrites": [
+  "builds": [
     {
-      "source": "/docs/:path*",
-      "destination": "/docs/:path*"
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "build"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/docs/(.*)",
+      "dest": "/docs/$1"
     },
     {
-      "source": "/:path*",
-      "destination": "/:path*"
+      "src": "/(.*)",
+      "dest": "/$1"
     }
   ],
   "headers": [
