@@ -21,9 +21,9 @@ const config: Config = {
   baseUrl: '/',
 
   // GitHub pages deployment config.
-  // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'facebook', // Usually your GitHub org/user name.
-  projectName: 'docusaurus', // Usually your repo name.
+  // Not using GitHub pages for this project
+  organizationName: '',
+  projectName: '',
 
   onBrokenLinks: 'throw',
 
