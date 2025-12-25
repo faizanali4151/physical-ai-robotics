@@ -12,8 +12,8 @@ const PORT = process.env.PORT || 3001;
 
 // CORS configuration (must be before routes)
 // Parse CORS origins from environment variable (comma-separated)
-const allowedOrigins = process.env.CORS_ORIGINS
-  ? process.env.CORS_ORIGINS.split(',').map(origin => origin.trim())
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
   : ['http://localhost:3000', 'http://localhost:3001'];
 
 app.use(
