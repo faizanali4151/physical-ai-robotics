@@ -12,20 +12,47 @@ const PORT = process.env.PORT || 3001;
 
 // CORS configuration (must be before routes)
 // Parse CORS origins from environment variable (comma-separated)
-const allowedOrigins = process.env.ALLOWED_ORIGINS
+const allowedOriginsFromEnv = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
   : ['http://localhost:3000', 'http://localhost:3001'];
 
+// Add production origins
+const staticAllowedOrigins = [
+  ...allowedOriginsFromEnv,
+  'https://physical-ai-book1.vercel.app',
+];
+
+// Dynamic origin handler to support Vercel preview deployments
+const corsOriginHandler = (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+  // Allow requests with no origin (like mobile apps or curl)
+  if (!origin) {
+    return callback(null, true);
+  }
+
+  // Check static allowed origins
+  if (staticAllowedOrigins.includes(origin)) {
+    return callback(null, true);
+  }
+
+  // Check for Vercel preview deployments (pattern: physical-ai-book1-*.vercel.app)
+  if (/^https:\/\/physical-ai-book1.*\.vercel\.app$/.test(origin)) {
+    return callback(null, true);
+  }
+
+  // Reject other origins
+  callback(new Error('Not allowed by CORS'));
+};
+
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: corsOriginHandler,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
 
-console.log(`🌐 CORS enabled for origins: ${allowedOrigins.join(', ')}`);
+console.log(`🌐 CORS enabled for origins: ${staticAllowedOrigins.join(', ')} + Vercel preview deployments`);
 
 // Health check endpoint
 app.get("/health", (req, res) => {

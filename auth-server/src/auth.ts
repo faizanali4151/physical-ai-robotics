@@ -38,6 +38,7 @@ export const auth = betterAuth({
     process.env.APP_URL || "http://localhost:3000",
     "http://localhost:3000",
     "http://localhost:3001",
+    "https://physical-ai-book1.vercel.app",
   ],
 
   // Email and password authentication

@@ -1,13 +1,14 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "build",
-  "framework": null,
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/$1"
-    }
-  ],
+  "framework": "docusaurus",
+  "installCommand": "npm install",
+  "devCommand": "npm start",
+  "regions": ["iad1"],
+  "env": {
+    "CHATBOT_API_URL": "https://physical-ai-backend-production-9f13.up.railway.app",
+    "AUTH_URL": "https://physical-ai-auth-production.up.railway.app"
+  },
   "headers": [
     {
       "source": "/(.*)",
@@ -26,9 +27,5 @@
         }
       ]
     }
-  ],
-  "env": {
-    "AUTH_URL": "@auth_url",
-    "CHATBOT_API_URL": "@chatbot_api_url"
-  }
+  ]
 }
