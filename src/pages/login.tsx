@@ -123,9 +123,13 @@ export default function Login(): ReactNode {
 
       // Use Better Auth client to initiate OAuth flow
       // IMPORTANT: Use absolute URL for callbackURL to prevent redirect to wrong domain
+      const callbackURL = ExecutionEnvironment.canUseDOM
+        ? window.location.origin + '/'
+        : 'http://localhost:3000/';
+
       await authClient.signIn.social({
         provider: provider,
-        callbackURL: 'http://localhost:3000/', // Absolute URL to frontend
+        callbackURL: callbackURL,
       });
     } catch (err: any) {
       console.error(`❌ ${provider} OAuth error:`, err);
