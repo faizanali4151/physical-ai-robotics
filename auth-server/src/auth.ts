@@ -34,11 +34,15 @@ export const auth = betterAuth({
   basePath: "/api/auth",
 
   // Trusted origins for CORS and OAuth redirects
+  // Parse from ALLOWED_ORIGINS env var + static origins
   trustedOrigins: [
+    ...(process.env.ALLOWED_ORIGINS?.split(',').map(o => o.trim()) || []),
     process.env.APP_URL || "http://localhost:3000",
     "http://localhost:3000",
     "http://localhost:3001",
     "https://physical-ai-book1.vercel.app",
+    // Match all Vercel preview deployments
+    /^https:\/\/physical-ai-book1.*\.vercel\.app$/,
   ],
 
   // Email and password authentication

@@ -32,7 +32,7 @@ class Config:
     def __init__(self):
         """Load and validate configuration from environment variables."""
         # Load .env file from backend directory (only in local development)
-        # In production (Render), environment variables are set directly
+        # In production, environment variables are set directly by the hosting platform
         env_path = Path(__file__).parent.parent / ".env"
         if env_path.exists():
             load_dotenv(dotenv_path=env_path)
@@ -46,7 +46,7 @@ class Config:
         self.neon_connection_string = self._get_required("NEON_CONNECTION_STRING")
 
         # Load optional configuration with defaults
-        # Render uses PORT environment variable, fallback to BACKEND_PORT for local dev
+        # Cloud platforms use PORT environment variable, fallback to BACKEND_PORT for local dev
         self.backend_port = int(self._get_optional("PORT") or self._get_optional("BACKEND_PORT", "8000"))
         cors_origins_str = self._get_optional(
             "CORS_ORIGINS",

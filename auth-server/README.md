@@ -200,9 +200,9 @@ Update OAuth provider settings with production URLs:
 
 ### Deploy Options
 
-**Option 1: Railway/Render**
+**Option 1: Cloud Platforms**
 ```bash
-# These platforms auto-detect Node.js apps
+# Most cloud platforms (Railway, Fly.io, etc.) auto-detect Node.js apps
 # Just connect your repo and set environment variables
 ```
 
