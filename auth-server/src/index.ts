@@ -65,8 +65,8 @@ app.get("/health", (req, res) => {
 
 // Mount BetterAuth handlers BEFORE express.json() middleware
 // All auth routes will be under /api/auth/*
-// Use regex pattern for reliable wildcard matching
-app.use("/api/auth", toNodeHandler(auth));
+// For Express v4, use path-to-regexp style matching
+app.all("/api/auth/(.*)", toNodeHandler(auth));
 
 // Mount express.json() AFTER Better Auth handler
 app.use(express.json());
