@@ -80,6 +80,12 @@ export const auth = betterAuth({
       enabled: false,
     },
     useSecureCookies: process.env.NODE_ENV === "production",
+    // CRITICAL: For cross-origin auth (Railway <-> Vercel), cookies need SameSite=None
+    defaultCookieAttributes: {
+      sameSite: "none",
+      secure: true,
+      partitioned: true, // New browser standards for third-party cookies
+    },
   },
 
   // Logging for debugging
