@@ -41,8 +41,6 @@ export const auth = betterAuth({
     "http://localhost:3000",
     "http://localhost:3001",
     "https://physical-ai-book1.vercel.app",
-    // Match all Vercel preview deployments
-    /^https:\/\/physical-ai-book1.*\.vercel\.app$/,
   ],
 
   // Email and password authentication
