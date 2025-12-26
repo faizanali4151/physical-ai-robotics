@@ -76,16 +76,56 @@ export class ChatClient {
   }
 
   /**
-   * Get API endpoint from meta tag or use default.
+   * Get API endpoint from meta tag, Docusaurus config, or detect from hostname.
    */
   static getApiEndpoint(): string {
-    if (typeof document !== 'undefined') {
-      const meta = document.querySelector('meta[name="rag-chatbot-api"]');
-      if (meta) {
-        return meta.getAttribute('content') || 'http://localhost:8000';
+    // Production backend URL
+    const PRODUCTION_BACKEND_URL = 'https://physical-ai-backend-production-9f13.up.railway.app';
+
+    if (typeof window !== 'undefined') {
+      const hostname = window.location.hostname;
+
+      console.log('[ChatClient] Detecting API endpoint...');
+      console.log('[ChatClient] Hostname:', hostname);
+
+      // Check meta tag first
+      if (typeof document !== 'undefined') {
+        const meta = document.querySelector('meta[name="rag-chatbot-api"]');
+        if (meta) {
+          const metaUrl = meta.getAttribute('content');
+          if (metaUrl && !metaUrl.includes('localhost')) {
+            console.log('[ChatClient] Using meta tag URL:', metaUrl);
+            return metaUrl;
+          }
+        }
+      }
+
+      // Check Docusaurus customFields
+      // @ts-ignore - Docusaurus injects this
+      const docusaurusConfig = window.__DOCUSAURUS__?.siteConfig?.customFields;
+      if (docusaurusConfig?.chatbotApiUrl) {
+        const configUrl = docusaurusConfig.chatbotApiUrl;
+        if (!configUrl.includes('localhost')) {
+          console.log('[ChatClient] Using Docusaurus customFields URL:', configUrl);
+          return configUrl;
+        }
+      }
+
+      // Detect production by hostname
+      const isProduction =
+        hostname.includes('vercel.app') ||
+        hostname.includes('physical-ai-book') ||
+        hostname.endsWith('.vercel.app') ||
+        !hostname.includes('localhost');
+
+      if (isProduction) {
+        console.log('[ChatClient] Using production backend URL:', PRODUCTION_BACKEND_URL);
+        return PRODUCTION_BACKEND_URL;
       }
     }
-    return process.env.REACT_APP_API_ENDPOINT || 'http://localhost:8000';
+
+    console.log('[ChatClient] Using localhost backend URL');
+    return 'http://localhost:8000';
   }
 
   /**
