@@ -59,7 +59,6 @@ export const auth = betterAuth({
     github: {
       clientId: process.env.GITHUB_CLIENT_ID as string,
       clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-      redirectURI: "https://physical-ai-auth-production.up.railway.app/api/auth/callback/github",
     },
   },
 
