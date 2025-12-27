@@ -89,10 +89,10 @@ app.use((req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Authentication server running on http://localhost:${PORT}`);
-  console.log(`📡 Auth endpoints available at http://localhost:${PORT}/api/auth`);
-  console.log(`🏥 Health check: http://localhost:${PORT}/health`);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`🚀 Authentication server running on http://0.0.0.0:${PORT}`);
+  console.log(`📡 Auth endpoints available at http://0.0.0.0:${PORT}/api/auth`);
+  console.log(`🏥 Health check: http://0.0.0.0:${PORT}/health`);
   console.log(`\n🔐 Enabled OAuth providers:`);
   if (process.env.GOOGLE_CLIENT_ID) console.log("  ✓ Google");
   if (process.env.GITHUB_CLIENT_ID) console.log("  ✓ GitHub");
