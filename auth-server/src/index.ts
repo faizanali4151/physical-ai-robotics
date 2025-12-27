@@ -19,7 +19,6 @@ const allowedOriginsFromEnv = process.env.ALLOWED_ORIGINS
 // Add production origins
 const staticAllowedOrigins = [
   ...allowedOriginsFromEnv,
-  'https://physical-ai-book1.vercel.app',
 ];
 
 // Dynamic origin handler to support Vercel preview deployments
